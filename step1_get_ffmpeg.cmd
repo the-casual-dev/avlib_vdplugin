@@ -15,9 +15,9 @@ IF NOT EXIST "%SEVENZIP%" (
 
 REM -------------------------------------
 
-SET "FFMPEG_DLLS=avcodec-62.dll avformat-62.dll avutil-60.dll swresample-6.dll swscale-9.dll"
+SET "FFMPEG_DLLS=avcodec-63.dll avformat-63.dll avutil-61.dll swresample-7.dll swscale-10.dll"
 SET "FFMPEG_LIBS=avcodec.lib avformat.lib avutil.lib swresample.lib swscale.lib"
-SET "FFMPEG_DEFS=avcodec-62.def avformat-62.def avutil-60.def swresample-6.def swscale-9.def"
+SET "FFMPEG_DEFS=avcodec-63.def avformat-63.def avutil-61.def swresample-7.def swscale-10.def"
 
 SET /A COUNT=0
 FOR %%D IN (%FFMPEG_DLLS%) DO IF EXIST "ffmpeg\bin_x64\%%D" SET /A COUNT+=1
@@ -29,7 +29,7 @@ IF %COUNT% EQU 15 (
   GOTO :END
 )
 
-SET FFMPEG_ZIP=ffmpeg-n8.1-latest-win64-gpl-shared-8.1.zip
+SET FFMPEG_ZIP=ffmpeg-n9.0-latest-win64-gpl-shared-9.0.zip
 
 IF NOT EXIST ffmpeg\%FFMPEG_ZIP% (
   ECHO Downloading "%FFMPEG_ZIP%"...
