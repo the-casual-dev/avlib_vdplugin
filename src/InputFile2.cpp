@@ -32,6 +32,7 @@ typedef struct AVCodecTag {
 extern bool config_decode_raw;
 extern bool config_decode_magic;
 extern bool config_disable_cache;
+extern bool config_ignore_audio;
 
 bool FileExist(const wchar_t* name)
 {
@@ -973,6 +974,12 @@ bool VDFFInputFile::GetAudioSource(int index, IVDXAudioSource** ppAS)
 	if (ppAS) *ppAS = nullptr;
 
 	if (!m_pFormatCtx) return false;
+
+	// Ignore audio in files that contain video: each audio source would open and probe
+	// the whole file again (separate AVFormatContext). Audio-only files are not affected.
+	if (config_ignore_audio && find_stream(m_pFormatCtx, AVMEDIA_TYPE_VIDEO) >= 0) {
+		return false;
+	}
 
 	int s_index = find_stream(m_pFormatCtx, AVMEDIA_TYPE_AUDIO);
 	if (index > 0) {
