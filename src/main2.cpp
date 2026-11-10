@@ -20,6 +20,7 @@ bool config_decode_raw = false;
 bool config_decode_magic = false;
 bool config_force_thread = false;
 bool config_disable_cache = false;
+bool config_ignore_audio = true; // skip audio streams of files that contain video (faster opening)
 float config_cache_size = 0.5;
 void saveConfig();
 
@@ -220,6 +221,7 @@ void saveConfig()
 	WritePrivateProfileStringW(L"force_ffmpeg", L"MagicYUV", config_decode_magic ? L"1" : L"0", buf);
 	WritePrivateProfileStringW(L"decode_model", L"force_frame_thread", config_force_thread ? L"1" : L"0", buf);
 	WritePrivateProfileStringW(L"decode_model", L"disable_cache", config_disable_cache ? L"1" : L"0", buf);
+	WritePrivateProfileStringW(L"input", L"ignore_audio", config_ignore_audio ? L"1" : L"0", buf);
 
 	auto str = std::format(L"{:.2}", config_cache_size);
 	WritePrivateProfileStringW(L"decode_model", L"cache_size", str.c_str(), buf);
@@ -248,6 +250,7 @@ void loadConfig()
 	config_decode_magic = GetPrivateProfileIntW(L"force_ffmpeg", L"MagicYUV", 0, buf) != 0;
 	config_force_thread = GetPrivateProfileIntW(L"decode_model", L"force_frame_thread", 0, buf) != 0;
 	config_disable_cache = GetPrivateProfileIntW(L"decode_model", L"disable_cache", 0, buf) != 0;
+	config_ignore_audio = GetPrivateProfileIntW(L"input", L"ignore_audio", 1, buf) != 0;
 
 	wchar_t buf2[128];
 	GetPrivateProfileStringW(L"decode_model", L"cache_size", L"0.5", buf2, 128, buf);
