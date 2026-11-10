@@ -1,0 +1,52 @@
+name: Build avlib-1.vdplugin (x64)
+
+on:
+  workflow_dispatch:   # lets you start it manually with a button
+  push:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download FFmpeg libs (same build the repo's step1 script uses)
+        shell: pwsh
+        run: |
+          $zip = "ffmpeg-n9.0-latest-win64-gpl-shared-9.0.zip"
+          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/$zip" -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath ffmpeg_tmp
+          New-Item -ItemType Directory -Force ffmpeg/bin_x64, ffmpeg/lib_x64 | Out-Null
+
+          $dlls = 'avcodec-63.dll','avformat-63.dll','avutil-61.dll','swresample-7.dll','swscale-10.dll'
+          $libs = 'avcodec.lib','avformat.lib','avutil.lib','swresample.lib','swscale.lib',
+                  'avcodec-63.def','avformat-63.def','avutil-61.def','swresample-7.def','swscale-10.def'
+
+          foreach ($n in $dlls) {
+            $f = Get-ChildItem ffmpeg_tmp -Recurse -Filter $n | Select-Object -First 1
+            if (-not $f) { throw "Missing in FFmpeg zip: $n" }
+            Copy-Item $f.FullName ffmpeg/bin_x64
+          }
+          foreach ($n in $libs) {
+            $f = Get-ChildItem ffmpeg_tmp -Recurse -Filter $n | Select-Object -First 1
+            if (-not $f) { throw "Missing in FFmpeg zip: $n" }
+            Copy-Item $f.FullName ffmpeg/lib_x64
+          }
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: msbuild avlib_vdplugin.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64
+
+      - name: Collect output
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out/plugins64 | Out-Null
+          Copy-Item _bin/Release_x64/avlib-1.vdplugin out/plugins64/
+          Copy-Item ffmpeg/bin_x64/*.dll out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: avlib-1-vdplugin-x64
+          path: out/
